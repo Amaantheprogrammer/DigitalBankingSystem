@@ -1,6 +1,7 @@
 package com.MyProject.DigitalBankingSystem.account.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.modelmapper.ModelMapper;
@@ -9,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.MyProject.DigitalBankingSystem.account.dto.AccountRequest;
 import com.MyProject.DigitalBankingSystem.account.dto.AccountResponse;
+import com.MyProject.DigitalBankingSystem.account.dto.UpdateAccountRequest;
 import com.MyProject.DigitalBankingSystem.account.entity.Account;
-import com.MyProject.DigitalBankingSystem.account.entity.AccountStatus;
 import com.MyProject.DigitalBankingSystem.account.entity.AccountType;
 import com.MyProject.DigitalBankingSystem.account.repository.AccountRepository;
 import com.MyProject.DigitalBankingSystem.exception.DuplicateResourceException;
@@ -67,25 +68,24 @@ public class AccountService {
     }
     
     @Transactional
-    public AccountResponse updateStatusById(AccountStatus status, Long accountId) {
+    public AccountResponse updateStatus(Long accountId, UpdateAccountRequest updateAccountRequest) {
         Account account = getOrThrow(accountId);
-        if (account.getStatus() == status) {
-            throw new DuplicateResourceException("Account already has " + status + " status");
+        if (account.getStatus() == updateAccountRequest.getStatus()) {
+            throw new DuplicateResourceException("Account already has " + updateAccountRequest.getStatus()+ " status");
         }
-        account.setStatus(status);
+        account.setStatus(updateAccountRequest.getStatus());
         Account savedAccount = accountRepository.save(account);
         return modelMapper.map(savedAccount, AccountResponse.class);
     }
 
-    @Transactional
-    public AccountResponse updateStatusByAccountNumber(AccountStatus status, String accountNumber) {
-        Account account = getByAccountNumberOrThrow(accountNumber);
-        if (account.getStatus() == status) {
-            throw new DuplicateResourceException("Account already has " + status + " status");
+    public List<AccountResponse> getAccountsByUserId(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found with ID: " + userId);
         }
-        account.setStatus(status);
-        Account savedAccount = accountRepository.save(account);
-        return modelMapper.map(savedAccount, AccountResponse.class);
+        List<Account> accounts = accountRepository.findByUserId(userId);
+        return accounts.stream()
+                .map(account -> modelMapper.map(account, AccountResponse.class))
+                .toList();
     }
 
     // ============================================== Private methods ==================================================
