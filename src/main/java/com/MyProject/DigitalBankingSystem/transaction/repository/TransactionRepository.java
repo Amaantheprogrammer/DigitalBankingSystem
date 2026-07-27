@@ -19,7 +19,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findBySenderAccount(Account senderAccount);
 
-    List<Transaction> findBySenderAccountAndTransferredAtAfter(
+    List<Transaction> findBySenderAccountAndTransactionAtAfter(
             Account senderAccount,
             LocalDateTime timestamp
     );
