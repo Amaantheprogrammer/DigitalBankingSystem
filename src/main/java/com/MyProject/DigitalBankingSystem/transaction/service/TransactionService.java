@@ -1,6 +1,7 @@
 package com.MyProject.DigitalBankingSystem.transaction.service;
 
 import com.MyProject.DigitalBankingSystem.account.entity.AccountStatus;
+import com.MyProject.DigitalBankingSystem.exception.DuplicateResourceException;
 import com.MyProject.DigitalBankingSystem.exception.InsufficientBalanceException;
 import com.MyProject.DigitalBankingSystem.exception.InvalidTransactionException;
 import com.MyProject.DigitalBankingSystem.transaction.dto.DepositRequest;
@@ -8,7 +9,7 @@ import com.MyProject.DigitalBankingSystem.transaction.dto.TransactionRequest;
 import com.MyProject.DigitalBankingSystem.transaction.dto.WithdrawRequest;
 import com.MyProject.DigitalBankingSystem.transaction.entity.TransactionStatus;
 import com.MyProject.DigitalBankingSystem.transaction.entity.TransactionType;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +47,9 @@ public class TransactionService {
         Account senderAccount = getAccountOrThrow(transactionRequest.getSenderAccountNumber());
         Account receiverAccount = getAccountOrThrow(transactionRequest.getReceiverAccountNumber());
         BigDecimal amount = transactionRequest.getAmount();
+        if (senderAccount == receiverAccount) {
+            throw new DuplicateResourceException("Sender and receiver cannot be same");
+        }
         if (senderAccount.getStatus() != AccountStatus.ACTIVE || receiverAccount.getStatus() != AccountStatus.ACTIVE) {
             throw new InvalidTransactionException("Inactive accounts cannot participate in money transaction");
         }
@@ -56,13 +60,16 @@ public class TransactionService {
         receiverAccount.setBalance(receiverAccount.getBalance().add(amount));
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
-        return TransactionResponse.builder()
+        Transaction transaction = Transaction.builder()
                 .transactionReference(generateTransactionReference())
+                .senderAccount(senderAccount)
+                .receiverAccount(receiverAccount)
                 .amount(amount)
                 .transactionType(TransactionType.TRANSFER)
-                .status(TransactionStatus.PENDING)
-                .transactionAt(LocalDateTime.now())
+                .status(TransactionStatus.SUCCESS)
                 .build();
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
 
     @Transactional
@@ -73,13 +80,14 @@ public class TransactionService {
         }
         account.setBalance(account.getBalance().add(depositRequest.getAmount()));
         accountRepository.save(account);
-        return TransactionResponse.builder()
+        Transaction transaction = Transaction.builder()
                 .transactionReference(generateTransactionReference())
                 .amount(depositRequest.getAmount())
                 .transactionType(TransactionType.DEPOSIT)
-                .status(TransactionStatus.PENDING)
-                .transactionAt(LocalDateTime.now())
+                .status(TransactionStatus.SUCCESS)
                 .build();
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
 
     @Transactional
@@ -93,13 +101,14 @@ public class TransactionService {
         }
         account.setBalance(account.getBalance().subtract(withdrawRequest.getAmount()));
         accountRepository.save(account);
-        return TransactionResponse.builder()
+        Transaction transaction = Transaction.builder()
                 .transactionReference(generateTransactionReference())
                 .amount(withdrawRequest.getAmount())
-                .transactionType(TransactionType.DEPOSIT)
-                .status(TransactionStatus.PENDING)
-                .transactionAt(LocalDateTime.now())
+                .transactionType(TransactionType.WITHDRAW)
+                .status(TransactionStatus.SUCCESS)
                 .build();
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
 
     // ================================================ Private methods ======================================================

@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class TransactionResponse {
     private String transactionReference;
     private BigDecimal amount;
