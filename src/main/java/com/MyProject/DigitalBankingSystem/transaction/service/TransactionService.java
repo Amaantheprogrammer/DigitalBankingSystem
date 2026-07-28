@@ -27,7 +27,6 @@ import com.MyProject.DigitalBankingSystem.transaction.entity.TransactionType;
 import com.MyProject.DigitalBankingSystem.transaction.repository.TransactionRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
