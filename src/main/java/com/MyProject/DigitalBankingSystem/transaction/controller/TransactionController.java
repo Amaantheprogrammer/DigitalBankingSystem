@@ -35,7 +35,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactionByReference(transactionReference));
     }
 
-    @GetMapping("/{accountNumber}")
+    @GetMapping("/all-transactions/{accountNumber}")
     public ResponseEntity<Page<TransactionResponse>> getTransactionsByAccountNumber(
             @PathVariable String accountNumber,
             @PageableDefault(size = 10) Pageable pageable
