@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.MyProject.DigitalBankingSystem.transaction.entity.Transaction;
 import com.MyProject.DigitalBankingSystem.user.entity.User;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
@@ -45,7 +46,7 @@ public class Account {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal balance;
 
-    @JsonManagedReference
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

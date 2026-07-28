@@ -17,10 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
@@ -28,6 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "users")
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,6 +49,7 @@ public class User {
     
     @JsonManagedReference // To prevent stackoverflow error
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Account> accounts = new ArrayList<>();
 
     @PrePersist

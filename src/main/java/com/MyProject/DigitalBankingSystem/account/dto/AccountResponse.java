@@ -17,7 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AccountResponse {
     private Long id;
-    private Long accountNumber;
+    private String accountNumber;
     private BigDecimal balance;
     private LocalDateTime createdAt;
     private AccountStatus status;

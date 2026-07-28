@@ -6,6 +6,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class TransactionService {
 
@@ -36,6 +37,7 @@ public class TransactionService {
     private final AccountRepository accountRepository;
     private final ModelMapper modelMapper;
 
+    @Transactional(readOnly = true)
     public TransactionResponse getTransactionById(Long transactionId) {
         Transaction transaction = getOrThrow(transactionId);
         return modelMapper.map(transaction, TransactionResponse.class);
@@ -116,6 +118,17 @@ public class TransactionService {
         Transaction savedTransaction = transactionRepository.save(transaction);
         return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
+
+    public Page<TransactionResponse> getTransactionsByAccountNumber(String accountNumber, Pageable pageable) {
+        Account account = getAccountOrThrow(accountNumber);
+        Page<Transaction> transactions = transactionRepository.findBySenderAccountOrReceiverAccountOrderByTransactionAtDesc(
+                account,
+                account,
+                pageable
+        );
+        return transactions.map(transaction -> modelMapper.map(transaction, TransactionResponse.class));
+    }
+
     // ================================================ Private methods ======================================================
     private Transaction getOrThrow(Long transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)

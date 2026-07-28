@@ -31,16 +31,19 @@ public class AccountController {
     
     @GetMapping("/{accountId}")
     public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long accountId) {
+        log.info("Fetching account with ID {}", accountId);
         return ResponseEntity.ok(accountService.getAccountById(accountId));
     }
 
     @GetMapping("/account-number/{accountNumber}")
     public ResponseEntity<AccountResponse> getByAccountNumber(@PathVariable String accountNumber) {
+        log.info("Fetching account with account number {}", accountNumber);
         return ResponseEntity.ok(accountService.getByAccountNumber(accountNumber));
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<AccountResponse>> getAccountsByUserId(@PathVariable Long userId) {
+        log.info("Fetching all accounts with user ID {}", userId);
         return ResponseEntity.ok(accountService.getAccountsByUserId(userId));
     }
 
@@ -59,4 +62,5 @@ public class AccountController {
     ) {
         return ResponseEntity.ok(accountService.updateStatus(accountId, updateAccountRequest));
     }
+
 }

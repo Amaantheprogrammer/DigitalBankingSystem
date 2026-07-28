@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AccountService {
 
     private final AccountRepository accountRepository;
@@ -78,6 +77,7 @@ public class AccountService {
         return modelMapper.map(savedAccount, AccountResponse.class);
     }
 
+    @Transactional(readOnly = true)
     public List<AccountResponse> getAccountsByUserId(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User not found with ID: " + userId);
