@@ -20,7 +20,6 @@ import com.MyProject.DigitalBankingSystem.user.entity.User;
 import com.MyProject.DigitalBankingSystem.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor

@@ -7,7 +7,6 @@ import java.util.List;
 import com.MyProject.DigitalBankingSystem.transaction.entity.Transaction;
 import com.MyProject.DigitalBankingSystem.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

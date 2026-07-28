@@ -1,14 +1,13 @@
 package com.MyProject.DigitalBankingSystem.user.dto;
 
-import com.MyProject.DigitalBankingSystem.account.entity.Account;
+import java.time.LocalDateTime;
+
 import com.MyProject.DigitalBankingSystem.user.entity.Role;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
