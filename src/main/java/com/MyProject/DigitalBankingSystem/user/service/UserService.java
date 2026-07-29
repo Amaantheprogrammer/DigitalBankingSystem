@@ -1,18 +1,18 @@
 package com.MyProject.DigitalBankingSystem.user.service;
 
-import com.MyProject.DigitalBankingSystem.exception.DuplicateResourceException;
-import com.MyProject.DigitalBankingSystem.exception.ResourceNotFoundException;
-import com.MyProject.DigitalBankingSystem.user.dto.UpdateUserRequest;
-import com.MyProject.DigitalBankingSystem.user.dto.UserRequest;
-import com.MyProject.DigitalBankingSystem.user.dto.UserResponse;
-import com.MyProject.DigitalBankingSystem.user.entity.Role;
-import com.MyProject.DigitalBankingSystem.user.entity.User;
-import com.MyProject.DigitalBankingSystem.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.MyProject.DigitalBankingSystem.exception.DuplicateResourceException;
+import com.MyProject.DigitalBankingSystem.exception.ResourceNotFoundException;
+import com.MyProject.DigitalBankingSystem.user.dto.UpdateUserRequest;
+import com.MyProject.DigitalBankingSystem.user.dto.UserResponse;
+import com.MyProject.DigitalBankingSystem.user.entity.User;
+import com.MyProject.DigitalBankingSystem.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

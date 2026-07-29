@@ -1,5 +1,11 @@
 package com.MyProject.DigitalBankingSystem.auth.service;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.MyProject.DigitalBankingSystem.auth.dto.AuthResponse;
 import com.MyProject.DigitalBankingSystem.auth.dto.LoginRequest;
 import com.MyProject.DigitalBankingSystem.auth.jwt.JwtService;
@@ -9,12 +15,8 @@ import com.MyProject.DigitalBankingSystem.user.dto.UserRequest;
 import com.MyProject.DigitalBankingSystem.user.entity.Role;
 import com.MyProject.DigitalBankingSystem.user.entity.User;
 import com.MyProject.DigitalBankingSystem.user.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +48,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(userRequest.getPassword()))
                 .role(Role.ROLE_USER)
                 .build();
-        User savedUser = userRepository.save(user);
+        userRepository.save(user);
     }
 
     public void logout() {
