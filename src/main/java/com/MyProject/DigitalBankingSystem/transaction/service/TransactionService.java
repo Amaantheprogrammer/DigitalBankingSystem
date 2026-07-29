@@ -42,6 +42,7 @@ public class TransactionService {
         return modelMapper.map(transaction, TransactionResponse.class);
     }
 
+    @Transactional(readOnly = true)
     public TransactionResponse getTransactionByReference(String transactionReference) {
         Transaction transaction = transactionRepository.findByTransactionReference(transactionReference)
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with reference: " + transactionReference));

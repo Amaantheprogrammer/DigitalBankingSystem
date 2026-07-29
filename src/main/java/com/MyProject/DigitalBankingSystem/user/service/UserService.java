@@ -36,21 +36,6 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse createUser(UserRequest userRequest) {
-        if (userRepository.existsByEmail(userRequest.getEmail())) {
-            throw new DuplicateResourceException("User already exists with email: " + userRequest.getEmail());
-        }
-        User user = User.builder()
-                .name(userRequest.getName())
-                .email(userRequest.getEmail())
-                .password(passwordEncoder.encode(userRequest.getPassword()))
-                .role(Role.ROLE_USER)
-                .build();
-        User savedUser = userRepository.save(user);
-        return modelMapper.map(savedUser, UserResponse.class);
-    }
-
-    @Transactional
     public UserResponse updateUser(Long userId, UpdateUserRequest request) {
         User user = getUserOrThrow(userId);
         if (request.getEmail() != null

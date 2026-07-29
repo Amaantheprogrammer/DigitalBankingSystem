@@ -31,12 +31,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 
-    @PostMapping
-    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest userRequest) {
-        log.info("Updating user with email: {}", userRequest.getEmail());
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userRequest));
-    }
-
     @PatchMapping("/{userId}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long userId, @Valid @RequestBody UpdateUserRequest request) {
         log.info("Updating user");
