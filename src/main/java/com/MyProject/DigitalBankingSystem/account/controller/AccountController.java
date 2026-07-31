@@ -43,11 +43,13 @@ public class AccountController {
 
     @GetMapping("/my-account/{accountNumber}")
     public ResponseEntity<AccountResponse> getMyAccount(@PathVariable String accountNumber) { // User + Admin
+        log.info("Fetching your account details");
         return ResponseEntity.ok(accountService.getMyAccount(accountNumber));
     }
 
     @GetMapping("/my-accounts")
     public ResponseEntity<List<AccountResponse>> getMyAccounts() { // User + Admin
+        log.info("Fetching all of your accounts");
         return ResponseEntity.ok(accountService.getMyAccounts());
     }
 

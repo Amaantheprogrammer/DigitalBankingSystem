@@ -1,6 +1,5 @@
 package com.MyProject.DigitalBankingSystem.user.service;
 
-import com.MyProject.DigitalBankingSystem.exception.AccessDeniedException;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -8,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.MyProject.DigitalBankingSystem.exception.AccessDeniedException;
 import com.MyProject.DigitalBankingSystem.exception.DuplicateResourceException;
 import com.MyProject.DigitalBankingSystem.exception.ResourceNotFoundException;
 import com.MyProject.DigitalBankingSystem.user.dto.UpdateUserRequest;
@@ -47,7 +47,6 @@ public class UserService {
     @Transactional
     public UserResponse updateUser(Long userId, UpdateUserRequest request) {
         User user = getUserOrThrow(userId);
-        User securedUser = getSecuredUser();
         if (!user.getEmail().equals(getSecuredUser().getEmail())) {
             throw new AccessDeniedException("Cannot access other user's account");
         }

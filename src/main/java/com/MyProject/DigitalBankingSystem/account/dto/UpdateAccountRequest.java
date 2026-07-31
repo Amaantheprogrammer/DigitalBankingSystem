@@ -1,8 +1,8 @@
 package com.MyProject.DigitalBankingSystem.account.dto;
 
 import com.MyProject.DigitalBankingSystem.account.entity.AccountStatus;
+
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
