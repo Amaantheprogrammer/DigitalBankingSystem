@@ -5,6 +5,7 @@ import com.MyProject.DigitalBankingSystem.auth.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -28,9 +29,20 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/auth/**"
-                        ).permitAll()
+                        // Authentication
+                        .requestMatchers("/auth/**").permitAll()
+                        // User access
+                        .requestMatchers(HttpMethod.GET, "/users/my-user").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/users/**").hasAnyRole("USER", "ADMIN")
+                        // Account access
+                        .requestMatchers(HttpMethod.GET, "/accounts/my-accounts").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/accounts/my-account/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/accounts").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/accounts/user/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/accounts/account-number/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/accounts/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/accounts/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)

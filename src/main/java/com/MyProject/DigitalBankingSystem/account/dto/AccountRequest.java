@@ -13,6 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccountRequest {
-    @NotNull(message = "Account type is a required field")
+    @NotNull(message = "Account type is required")
     private AccountType accountType;
 }

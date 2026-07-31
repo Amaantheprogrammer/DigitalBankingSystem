@@ -1,6 +1,9 @@
 package com.MyProject.DigitalBankingSystem.user.service;
 
+import com.MyProject.DigitalBankingSystem.exception.AccessDeniedException;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +38,19 @@ public class UserService {
         return modelMapper.map(user, UserResponse.class);
     }
 
+    @Transactional(readOnly = true)
+    public UserResponse getMyProfile() {
+        User user = getSecuredUser();
+        return modelMapper.map(user, UserResponse.class);
+    }
+
     @Transactional
     public UserResponse updateUser(Long userId, UpdateUserRequest request) {
         User user = getUserOrThrow(userId);
+        User securedUser = getSecuredUser();
+        if (!user.getEmail().equals(getSecuredUser().getEmail())) {
+            throw new AccessDeniedException("Cannot access other user's account");
+        }
         if (request.getEmail() != null
                 && !request.getEmail().equals(user.getEmail())
                 && userRepository.existsByEmail(request.getEmail())
@@ -61,5 +74,12 @@ public class UserService {
     private User getUserOrThrow(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+    }
+
+    private User getSecuredUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 }

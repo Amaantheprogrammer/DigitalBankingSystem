@@ -4,13 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.MyProject.DigitalBankingSystem.account.dto.AccountRequest;
 import com.MyProject.DigitalBankingSystem.account.dto.AccountResponse;
@@ -30,37 +24,41 @@ public class AccountController {
     private final AccountService accountService;
     
     @GetMapping("/{accountId}")
-    public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long accountId) {
+    public ResponseEntity<AccountResponse> getAccountById(@PathVariable Long accountId) { // Admin
         log.info("Fetching account with ID {}", accountId);
         return ResponseEntity.ok(accountService.getAccountById(accountId));
     }
 
     @GetMapping("/account-number/{accountNumber}")
-    public ResponseEntity<AccountResponse> getByAccountNumber(@PathVariable String accountNumber) {
+    public ResponseEntity<AccountResponse> getByAccountNumber(@PathVariable String accountNumber) { // Admin
         log.info("Fetching account with account number {}", accountNumber);
         return ResponseEntity.ok(accountService.getByAccountNumber(accountNumber));
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<AccountResponse>> getAccountsByUserId(@PathVariable Long userId) {
+    public ResponseEntity<List<AccountResponse>> getAccountsByUserId(@PathVariable Long userId) { // Admin
         log.info("Fetching all accounts with user ID {}", userId);
         return ResponseEntity.ok(accountService.getAccountsByUserId(userId));
     }
 
-    @PostMapping("/{userId}")
-    public ResponseEntity<AccountResponse> createAccount(
-            @PathVariable Long userId,
-            @Valid @RequestBody AccountRequest accountRequest
-    ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(accountService.createAccount(accountRequest, userId));
+    @GetMapping("/my-account/{accountNumber}")
+    public ResponseEntity<AccountResponse> getMyAccount(@PathVariable String accountNumber) { // User + Admin
+        return ResponseEntity.ok(accountService.getMyAccount(accountNumber));
     }
 
-    @PatchMapping("/status/{accountId}")
-    public ResponseEntity<AccountResponse> updateStatus(
-            @Valid @RequestBody UpdateAccountRequest updateAccountRequest,
-            @PathVariable Long accountId
-    ) {
-        return ResponseEntity.ok(accountService.updateStatus(accountId, updateAccountRequest));
+    @GetMapping("/my-accounts")
+    public ResponseEntity<List<AccountResponse>> getMyAccounts() { // User + Admin
+        return ResponseEntity.ok(accountService.getMyAccounts());
+    }
+
+    @PostMapping
+    public ResponseEntity<AccountResponse> createAccount(@Valid @RequestBody AccountRequest accountRequest) { // User + Admin
+        return ResponseEntity.status(HttpStatus.CREATED).body(accountService.createAccount(accountRequest));
+    }
+
+    @PatchMapping("/status")
+    public ResponseEntity<AccountResponse> updateStatus(@Valid @RequestBody UpdateAccountRequest updateAccountRequest) { // Admin
+        return ResponseEntity.ok(accountService.updateStatus(updateAccountRequest));
     }
 
 }

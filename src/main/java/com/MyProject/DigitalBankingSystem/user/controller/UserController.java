@@ -36,6 +36,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 
+    @GetMapping("/my-user")
+    public ResponseEntity<UserResponse> getMyProfile() {
+        log.info("Fetching your user details");
+        return ResponseEntity.ok(userService.getMyProfile());
+    }
+
     @PatchMapping("/{userId}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long userId, @Valid @RequestBody UpdateUserRequest request) {
         log.info("Updating user");

@@ -13,6 +13,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateAccountRequest {
+    @NotBlank(message = "Account number is required")
+    private String accountNumber;
     @NotBlank(message = "Account status is required")
     private AccountStatus status;
 }
