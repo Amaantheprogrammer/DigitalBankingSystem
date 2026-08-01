@@ -5,9 +5,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-import com.MyProject.DigitalBankingSystem.exception.AccessDeniedException;
-import com.MyProject.DigitalBankingSystem.user.entity.User;
-import com.MyProject.DigitalBankingSystem.user.repository.UserRepository;
+import com.MyProject.DigitalBankingSystem.fraud.service.FraudCheckService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.MyProject.DigitalBankingSystem.account.entity.Account;
 import com.MyProject.DigitalBankingSystem.account.entity.AccountStatus;
 import com.MyProject.DigitalBankingSystem.account.repository.AccountRepository;
+import com.MyProject.DigitalBankingSystem.exception.AccessDeniedException;
 import com.MyProject.DigitalBankingSystem.exception.InsufficientBalanceException;
 import com.MyProject.DigitalBankingSystem.exception.InvalidTransactionException;
 import com.MyProject.DigitalBankingSystem.exception.ResourceNotFoundException;
@@ -30,6 +29,8 @@ import com.MyProject.DigitalBankingSystem.transaction.entity.Transaction;
 import com.MyProject.DigitalBankingSystem.transaction.entity.TransactionStatus;
 import com.MyProject.DigitalBankingSystem.transaction.entity.TransactionType;
 import com.MyProject.DigitalBankingSystem.transaction.repository.TransactionRepository;
+import com.MyProject.DigitalBankingSystem.user.entity.User;
+import com.MyProject.DigitalBankingSystem.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,6 +41,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
+    private final FraudCheckService fraudCheckService;
     private final ModelMapper modelMapper;
 
     @Transactional(readOnly = true)
@@ -55,6 +57,7 @@ public class TransactionService {
         return modelMapper.map(transaction, TransactionResponse.class);
     }
 
+    @Transactional(readOnly = true)
     public Page<TransactionResponse> getTransactionsByAccountNumber(String accountNumber, Pageable pageable) {
         Account account = getAccountOrThrow(accountNumber);
         Page<Transaction> transactions = transactionRepository.findBySenderAccountOrReceiverAccountOrderByTransactionAtDesc(
@@ -65,20 +68,20 @@ public class TransactionService {
         return transactions.map(transaction -> modelMapper.map(transaction, TransactionResponse.class));
     }
 
+    @Transactional(readOnly = true)
     public TransactionResponse getMyTransaction(String transactionReference) {
         Transaction transaction = transactionRepository.findByTransactionReference(transactionReference)
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with reference: " + transactionReference));
 
-        if (transaction.getTransactionType() == TransactionType.TRANSFER) {
+        if (transaction.getTransactionType() == TransactionType.TRANSFER || transaction.getTransactionType() == TransactionType.WITHDRAW) {
             validateUserSecurity(transaction.getSenderAccount().getUser(), getSecuredUser());
         } else if (transaction.getTransactionType() == TransactionType.DEPOSIT) {
             validateUserSecurity(transaction.getReceiverAccount().getUser(), getSecuredUser());
-        } else {
-            validateUserSecurity(transaction.getSenderAccount().getUser(), getSecuredUser());
         }
         return modelMapper.map(transaction, TransactionResponse.class);
     }
 
+    @Transactional(readOnly = true)
     public Page<TransactionResponse> getMyTransactions(String accountNumber, Pageable pageable) {
         Account account = getAccountOrThrow(accountNumber);
         validateUserSecurity(account.getUser(), getSecuredUser());
@@ -95,15 +98,16 @@ public class TransactionService {
         Account senderAccount = getAccountOrThrow(transactionRequest.getSenderAccountNumber());
 
         validateUserSecurity(senderAccount.getUser(), getSecuredUser());
+        validatePositiveAmount(transactionRequest.getAmount());
+        fraudCheckService.checkTransactionLimit(senderAccount, transactionRequest.getAmount());
+        fraudCheckService.checkTransactionFrequency(senderAccount);
 
         Account receiverAccount = getAccountOrThrow(transactionRequest.getReceiverAccountNumber());
         BigDecimal amount = transactionRequest.getAmount();
 
         if (transactionRequest.getSenderAccountNumber().equals(transactionRequest.getReceiverAccountNumber())) {
-            throw new InvalidTransactionException("Sender and receiver cannot be the same account");
+            throw new InvalidTransactionException("Sender and receiver cannot be the same");
         }
-
-        validatePositiveAmount(transactionRequest.getAmount());
 
         if (senderAccount.getStatus() != AccountStatus.ACTIVE || receiverAccount.getStatus() != AccountStatus.ACTIVE) {
             throw new InvalidTransactionException("Inactive accounts cannot participate in money transaction");
@@ -161,6 +165,8 @@ public class TransactionService {
         validateUserSecurity(account.getUser(), getSecuredUser());
         validatePositiveAmount(withdrawRequest.getAmount());
         validateActiveAccount(account);
+        fraudCheckService.checkTransactionLimit(account, withdrawRequest.getAmount());
+        fraudCheckService.checkTransactionFrequency(account);
 
         if (account.getBalance().subtract(withdrawRequest.getAmount()).compareTo(BigDecimal.ZERO) < 0) {
             throw new InsufficientBalanceException("Insufficient balance in your account");

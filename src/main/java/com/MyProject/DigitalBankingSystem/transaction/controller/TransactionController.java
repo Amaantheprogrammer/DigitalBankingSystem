@@ -25,13 +25,13 @@ public class TransactionController {
 
     @GetMapping("/{transactionId}")
     public ResponseEntity<TransactionResponse> getTransactionById(@PathVariable Long transactionId) {
-        log.info("Fetching transaction with ID: {}", transactionId);
+        log.info("Fetching transaction with ID {}", transactionId);
         return ResponseEntity.ok(transactionService.getTransactionById(transactionId));
     }
 
     @GetMapping("/reference/{transactionReference}")
     public ResponseEntity<TransactionResponse> getTransactionByReference(@PathVariable String transactionReference) {
-        log.info("Fetching transaction with reference: {}", transactionReference);
+        log.info("Fetching transaction with reference {}", transactionReference);
         return ResponseEntity.ok(transactionService.getTransactionByReference(transactionReference));
     }
 
@@ -40,11 +40,13 @@ public class TransactionController {
             @PathVariable String accountNumber,
             @PageableDefault(size = 10) Pageable pageable
     ) {
+        log.info("Fetching all transactions with account number {}", accountNumber);
         return ResponseEntity.ok(transactionService.getTransactionsByAccountNumber(accountNumber, pageable));
     }
 
     @GetMapping("/my-transaction/{transactionReference}")
     public ResponseEntity<TransactionResponse> getMyTransaction(@PathVariable String transactionReference) {
+        log.info("Fetching your transaction details with reference number {}", transactionReference);
         return ResponseEntity.ok(transactionService.getMyTransaction(transactionReference));
     }
 
@@ -53,6 +55,7 @@ public class TransactionController {
             @PathVariable String accountNumber,
             @PageableDefault(size = 10) Pageable pageable
     ) {
+        log.info("Fetching all transactions with account number {}", accountNumber);
         return ResponseEntity.ok(transactionService.getMyTransactions(accountNumber, pageable));
     }
 
@@ -64,13 +67,13 @@ public class TransactionController {
 
     @PostMapping("/deposit")
     public ResponseEntity<TransactionResponse> deposit(@Valid @RequestBody DepositRequest depositRequest) {
-        log.info("Depositing {} into account", depositRequest.getAmount());
+        log.info("Depositing {} into your account", depositRequest.getAmount());
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.deposit(depositRequest));
     }
 
     @PostMapping("/withdraw")
     public ResponseEntity<TransactionResponse> withdraw(@Valid @RequestBody WithdrawRequest withdrawRequest) {
-        log.info("Withdrawing {} from account", withdrawRequest.getAmount());
+        log.info("Withdrawing {} from your account", withdrawRequest.getAmount());
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.withdraw(withdrawRequest));
     }
 }

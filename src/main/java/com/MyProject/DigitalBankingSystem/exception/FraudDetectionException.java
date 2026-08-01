@@ -1,4 +1,7 @@
 package com.MyProject.DigitalBankingSystem.exception;
 
-public class FraudDetectionException {
+public class FraudDetectionException extends RuntimeException {
+    public FraudDetectionException(String message) {
+        super(message);
+    }
 }

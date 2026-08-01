@@ -31,4 +31,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             Account receiverAccount,
             Pageable pageable
     );
+
+    long countBySenderAccountAndTransactionAtAfter(Account senderAccount, LocalDateTime transactionAt);
 }
