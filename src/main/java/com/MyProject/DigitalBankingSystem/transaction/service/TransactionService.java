@@ -5,9 +5,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+import com.MyProject.DigitalBankingSystem.exception.AccessDeniedException;
+import com.MyProject.DigitalBankingSystem.user.entity.User;
+import com.MyProject.DigitalBankingSystem.user.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +39,7 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
     @Transactional(readOnly = true)
@@ -49,25 +55,69 @@ public class TransactionService {
         return modelMapper.map(transaction, TransactionResponse.class);
     }
 
+    public Page<TransactionResponse> getTransactionsByAccountNumber(String accountNumber, Pageable pageable) {
+        Account account = getAccountOrThrow(accountNumber);
+        Page<Transaction> transactions = transactionRepository.findBySenderAccountOrReceiverAccountOrderByTransactionAtDesc(
+                account,
+                account,
+                pageable
+        );
+        return transactions.map(transaction -> modelMapper.map(transaction, TransactionResponse.class));
+    }
+
+    public TransactionResponse getMyTransaction(String transactionReference) {
+        Transaction transaction = transactionRepository.findByTransactionReference(transactionReference)
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with reference: " + transactionReference));
+
+        if (transaction.getTransactionType() == TransactionType.TRANSFER) {
+            validateUserSecurity(transaction.getSenderAccount().getUser(), getSecuredUser());
+        } else if (transaction.getTransactionType() == TransactionType.DEPOSIT) {
+            validateUserSecurity(transaction.getReceiverAccount().getUser(), getSecuredUser());
+        } else {
+            validateUserSecurity(transaction.getSenderAccount().getUser(), getSecuredUser());
+        }
+        return modelMapper.map(transaction, TransactionResponse.class);
+    }
+
+    public Page<TransactionResponse> getMyTransactions(String accountNumber, Pageable pageable) {
+        Account account = getAccountOrThrow(accountNumber);
+        validateUserSecurity(account.getUser(), getSecuredUser());
+        Page<Transaction> transactions =transactionRepository.findBySenderAccountOrReceiverAccountOrderByTransactionAtDesc(
+                account,
+                account,
+                pageable
+        );
+        return transactions.map(transaction -> modelMapper.map(transaction, TransactionResponse.class));
+    }
+
     @Transactional
     public TransactionResponse transfer(TransactionRequest transactionRequest) {
         Account senderAccount = getAccountOrThrow(transactionRequest.getSenderAccountNumber());
+
+        validateUserSecurity(senderAccount.getUser(), getSecuredUser());
+
         Account receiverAccount = getAccountOrThrow(transactionRequest.getReceiverAccountNumber());
         BigDecimal amount = transactionRequest.getAmount();
+
         if (transactionRequest.getSenderAccountNumber().equals(transactionRequest.getReceiverAccountNumber())) {
             throw new InvalidTransactionException("Sender and receiver cannot be the same account");
         }
+
         validatePositiveAmount(transactionRequest.getAmount());
+
         if (senderAccount.getStatus() != AccountStatus.ACTIVE || receiverAccount.getStatus() != AccountStatus.ACTIVE) {
             throw new InvalidTransactionException("Inactive accounts cannot participate in money transaction");
         }
+
         if (senderAccount.getBalance().subtract(amount).compareTo(BigDecimal.ZERO) < 0) {
             throw new InsufficientBalanceException("Insufficient balance in the account: " + senderAccount.getAccountNumber());
         }
         senderAccount.setBalance(senderAccount.getBalance().subtract(amount));
         receiverAccount.setBalance(receiverAccount.getBalance().add(amount));
+
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
+
         Transaction transaction = Transaction.builder()
                 .transactionReference(generateTransactionReference())
                 .senderAccount(senderAccount)
@@ -77,16 +127,21 @@ public class TransactionService {
                 .status(TransactionStatus.SUCCESS)
                 .build();
         Transaction savedTransaction = transactionRepository.save(transaction);
+
         return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
 
     @Transactional
     public TransactionResponse deposit(DepositRequest depositRequest) {
         Account account = getAccountOrThrow(depositRequest.getAccountNumber());
+
+        validateUserSecurity(account.getUser(), getSecuredUser());
         validatePositiveAmount(depositRequest.getAmount());
         validateActiveAccount(account);
+
         account.setBalance(account.getBalance().add(depositRequest.getAmount()));
         Account savedAccount = accountRepository.save(account);
+
         Transaction transaction = Transaction.builder()
                 .transactionReference(generateTransactionReference())
                 .receiverAccount(savedAccount)
@@ -95,14 +150,18 @@ public class TransactionService {
                 .status(TransactionStatus.SUCCESS)
                 .build();
         Transaction savedTransaction = transactionRepository.save(transaction);
+
         return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
 
     @Transactional
     public TransactionResponse withdraw(WithdrawRequest withdrawRequest) {
         Account account = getAccountOrThrow(withdrawRequest.getAccountNumber());
+
+        validateUserSecurity(account.getUser(), getSecuredUser());
         validatePositiveAmount(withdrawRequest.getAmount());
         validateActiveAccount(account);
+
         if (account.getBalance().subtract(withdrawRequest.getAmount()).compareTo(BigDecimal.ZERO) < 0) {
             throw new InsufficientBalanceException("Insufficient balance in your account");
         }
@@ -119,17 +178,7 @@ public class TransactionService {
         return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
 
-    public Page<TransactionResponse> getTransactionsByAccountNumber(String accountNumber, Pageable pageable) {
-        Account account = getAccountOrThrow(accountNumber);
-        Page<Transaction> transactions = transactionRepository.findBySenderAccountOrReceiverAccountOrderByTransactionAtDesc(
-                account,
-                account,
-                pageable
-        );
-        return transactions.map(transaction -> modelMapper.map(transaction, TransactionResponse.class));
-    }
-
-    // ================================================ Private methods ======================================================
+    // Private methods
     private Transaction getOrThrow(Long transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with ID: " + transactionId));
@@ -161,6 +210,19 @@ public class TransactionService {
     private void validatePositiveAmount(BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidTransactionException("Amount must be greater than zero");
+        }
+    }
+
+    private User getSecuredUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+    }
+
+    private void validateUserSecurity(User user, User securedUser) {
+        if (!user.getEmail().equals(securedUser.getEmail())) {
+            throw new AccessDeniedException("Cannot access other accounts");
         }
     }
 }

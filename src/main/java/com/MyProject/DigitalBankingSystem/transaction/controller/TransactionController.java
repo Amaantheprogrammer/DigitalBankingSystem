@@ -43,6 +43,19 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getTransactionsByAccountNumber(accountNumber, pageable));
     }
 
+    @GetMapping("/my-transaction/{transactionReference}")
+    public ResponseEntity<TransactionResponse> getMyTransaction(@PathVariable String transactionReference) {
+        return ResponseEntity.ok(transactionService.getMyTransaction(transactionReference));
+    }
+
+    @GetMapping("/my-transactions/{accountNumber}")
+    public ResponseEntity<Page<TransactionResponse>> getMyTransactions(
+            @PathVariable String accountNumber,
+            @PageableDefault(size = 10) Pageable pageable
+    ) {
+        return ResponseEntity.ok(transactionService.getMyTransactions(accountNumber, pageable));
+    }
+
     @PostMapping("/transfer")
     public ResponseEntity<TransactionResponse> transfer(@Valid @RequestBody TransactionRequest transactionRequest) {
         log.info("Initiating transfer between accounts");
