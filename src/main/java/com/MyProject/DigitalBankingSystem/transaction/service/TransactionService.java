@@ -99,8 +99,11 @@ public class TransactionService {
 
         validateUserSecurity(senderAccount.getUser(), getSecuredUser());
         validatePositiveAmount(transactionRequest.getAmount());
-        fraudCheckService.checkTransactionLimit(senderAccount, transactionRequest.getAmount());
-        fraudCheckService.checkTransactionFrequency(senderAccount);
+
+        String transactionReference = generateTransactionReference();
+
+        fraudCheckService.checkTransactionLimit(senderAccount, transactionRequest.getAmount(), transactionReference);
+        fraudCheckService.checkTransactionFrequency(senderAccount, transactionReference);
 
         Account receiverAccount = getAccountOrThrow(transactionRequest.getReceiverAccountNumber());
         BigDecimal amount = transactionRequest.getAmount();
@@ -123,7 +126,7 @@ public class TransactionService {
         accountRepository.save(receiverAccount);
 
         Transaction transaction = Transaction.builder()
-                .transactionReference(generateTransactionReference())
+                .transactionReference(transactionReference)
                 .senderAccount(senderAccount)
                 .receiverAccount(receiverAccount)
                 .amount(amount)
@@ -165,8 +168,11 @@ public class TransactionService {
         validateUserSecurity(account.getUser(), getSecuredUser());
         validatePositiveAmount(withdrawRequest.getAmount());
         validateActiveAccount(account);
-        fraudCheckService.checkTransactionLimit(account, withdrawRequest.getAmount());
-        fraudCheckService.checkTransactionFrequency(account);
+
+        String transactionReference = generateTransactionReference();
+
+        fraudCheckService.checkTransactionLimit(account, withdrawRequest.getAmount(), transactionReference);
+        fraudCheckService.checkTransactionFrequency(account, transactionReference);
 
         if (account.getBalance().subtract(withdrawRequest.getAmount()).compareTo(BigDecimal.ZERO) < 0) {
             throw new InsufficientBalanceException("Insufficient balance in your account");
@@ -174,7 +180,7 @@ public class TransactionService {
         account.setBalance(account.getBalance().subtract(withdrawRequest.getAmount()));
         Account savedAccount = accountRepository.save(account);
         Transaction transaction = Transaction.builder()
-                .transactionReference(generateTransactionReference())
+                .transactionReference(transactionReference)
                 .senderAccount(savedAccount)
                 .amount(withdrawRequest.getAmount())
                 .transactionType(TransactionType.WITHDRAW)
@@ -209,7 +215,7 @@ public class TransactionService {
 
     private void validateActiveAccount(Account account) {
         if (account.getStatus() != AccountStatus.ACTIVE) {
-            throw new InvalidTransactionException("Cannot withdraw with " + account.getStatus() + " status");
+            throw new InvalidTransactionException("Accpunt is not ACTIVE. Current status:  " + account.getStatus());
         }
     }
 

@@ -1,5 +1,5 @@
 package com.MyProject.DigitalBankingSystem.fraud.entity;
-
+import com.MyProject.DigitalBankingSystem.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,7 +20,11 @@ public class FraudLog {
     @Column(nullable = false)
     private String accountNumber;
 
+    @Column(nullable = false, unique = true)
+    private String transactionReference;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private FraudStatus status;
 
     @Column(nullable = false)
@@ -28,5 +32,12 @@ public class FraudLog {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime detectedAt;
+
+    @Column
+    private LocalDateTime reviewedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reviewed_by")
+    private User reviewedBy;
 
 }

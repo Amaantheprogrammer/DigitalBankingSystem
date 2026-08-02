@@ -52,6 +52,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/transactions/transfer").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/transactions/withdraw").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/transactions/deposit").hasAnyRole("USER", "ADMIN")
+                        // FraudLog access
+                        .requestMatchers(HttpMethod.GET, "/fraud-logs/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/fraud-logs/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
