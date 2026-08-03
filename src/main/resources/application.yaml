@@ -1,6 +1,10 @@
 spring:
   application:
     name: DigitalBankingSystem
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
   datasource:
     url: jdbc:mysql://localhost:3306/banking_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true

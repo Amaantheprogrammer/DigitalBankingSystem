@@ -1,5 +1,7 @@
 package com.MyProject.DigitalBankingSystem.auth.service;
 
+import com.MyProject.DigitalBankingSystem.auth.jwt.TokenBlacklistService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthService {
     private final JwtService jwtService;
+    private final TokenBlacklistService tokenBlacklistService;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -51,8 +54,14 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public void logout() {
-
+    public void logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return;
+        }
+        String token = authHeader.substring(7);
+        long remainingExpiration = jwtService.getRemainingExpiration(token);
+        tokenBlacklistService.blacklistToken(token, remainingExpiration);
     }
 
 }

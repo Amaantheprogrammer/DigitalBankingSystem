@@ -59,6 +59,11 @@ public class JwtService {
         return !isTokenExpired(token) && email.equals(extractEmail(token));
     }
 
+    public long getRemainingExpiration(String token) {
+        Date expiration = extractAllClaims(token).getExpiration();
+        return expiration.getTime() - System.currentTimeMillis();
+    }
+
     private Key getSignedKey() {
         return Keys.hmacShaKeyFor(JWT_SECRET_KEY.getBytes());
     }

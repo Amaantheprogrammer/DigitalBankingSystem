@@ -2,6 +2,7 @@ package com.MyProject.DigitalBankingSystem.config;
 
 import com.MyProject.DigitalBankingSystem.auth.jwt.JwtAuthFilter;
 import com.MyProject.DigitalBankingSystem.auth.jwt.JwtService;
+import com.MyProject.DigitalBankingSystem.auth.jwt.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtService jwtService;
+    private final TokenBlacklistService tokenBlacklistService;
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -62,7 +64,7 @@ public class SecurityConfig {
     }
     @Bean
     public JwtAuthFilter jwtAuthFilter() {
-        return new JwtAuthFilter(jwtService);
+        return new JwtAuthFilter(jwtService, tokenBlacklistService);
     }
 
     @Bean
