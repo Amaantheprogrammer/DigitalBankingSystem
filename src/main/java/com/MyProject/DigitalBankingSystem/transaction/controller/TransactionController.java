@@ -60,9 +60,12 @@ public class TransactionController {
     }
 
     @PostMapping("/transfer")
-    public ResponseEntity<TransactionResponse> transfer(@Valid @RequestBody TransactionRequest transactionRequest) {
+    public ResponseEntity<TransactionResponse> transfer(
+            @RequestHeader("Idempotency-Key") String key,
+            @Valid @RequestBody TransactionRequest transactionRequest
+    ) {
         log.info("Initiating transfer between accounts");
-        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.transfer(transactionRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.transfer(key, transactionRequest));
     }
 
     @PostMapping("/deposit")

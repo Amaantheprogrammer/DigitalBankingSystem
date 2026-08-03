@@ -25,3 +25,7 @@ server:
   port: 5380
   servlet:
     context-path: /api/v1
+
+logging:
+  level:
+    org.springframework.security: DEBUG

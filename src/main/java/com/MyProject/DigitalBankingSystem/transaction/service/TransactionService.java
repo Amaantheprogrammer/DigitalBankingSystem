@@ -5,7 +5,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+import com.MyProject.DigitalBankingSystem.exception.*;
 import com.MyProject.DigitalBankingSystem.fraud.service.FraudCheckService;
+import com.MyProject.DigitalBankingSystem.idempotency.service.IdempotencyService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,10 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.MyProject.DigitalBankingSystem.account.entity.Account;
 import com.MyProject.DigitalBankingSystem.account.entity.AccountStatus;
 import com.MyProject.DigitalBankingSystem.account.repository.AccountRepository;
-import com.MyProject.DigitalBankingSystem.exception.AccessDeniedException;
-import com.MyProject.DigitalBankingSystem.exception.InsufficientBalanceException;
-import com.MyProject.DigitalBankingSystem.exception.InvalidTransactionException;
-import com.MyProject.DigitalBankingSystem.exception.ResourceNotFoundException;
 import com.MyProject.DigitalBankingSystem.transaction.dto.DepositRequest;
 import com.MyProject.DigitalBankingSystem.transaction.dto.TransactionRequest;
 import com.MyProject.DigitalBankingSystem.transaction.dto.TransactionResponse;
@@ -42,7 +40,12 @@ public class TransactionService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final FraudCheckService fraudCheckService;
+    private final IdempotencyService idempotencyService;
     private final ModelMapper modelMapper;
+
+    private static final String TRANSFER = "transfer";
+    private static final String WITHDRAW = "withdraw";
+    private static final String DEPOSIT = "deposit";
 
     @Transactional(readOnly = true)
     public TransactionResponse getTransactionById(Long transactionId) {
@@ -94,7 +97,11 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionResponse transfer(TransactionRequest transactionRequest) {
+    public TransactionResponse transfer(String key, TransactionRequest transactionRequest) {
+        if (idempotencyService.exists(key, TRANSFER)) {
+            throw new DuplicateResourceException("Transaction already processed");
+        }
+
         Account senderAccount = getAccountOrThrow(transactionRequest.getSenderAccountNumber());
 
         validateUserSecurity(senderAccount.getUser(), getSecuredUser());
@@ -134,6 +141,8 @@ public class TransactionService {
                 .status(TransactionStatus.SUCCESS)
                 .build();
         Transaction savedTransaction = transactionRepository.save(transaction);
+
+        idempotencyService.save(key, TRANSFER, savedTransaction.getTransactionReference());
 
         return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
