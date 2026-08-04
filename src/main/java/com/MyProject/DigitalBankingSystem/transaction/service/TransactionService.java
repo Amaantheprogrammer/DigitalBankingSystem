@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -54,6 +55,7 @@ public class TransactionService {
     private static final String DEPOSIT = "deposit";
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "transactions", key = "#id")
     public TransactionResponse getTransactionById(Long transactionId) {
         Transaction transaction = getOrThrow(transactionId);
         return modelMapper.map(transaction, TransactionResponse.class);

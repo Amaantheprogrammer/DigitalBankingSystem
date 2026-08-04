@@ -6,6 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import com.MyProject.DigitalBankingSystem.exception.AccessDeniedException;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,13 +35,14 @@ public class AccountService {
     private final ModelMapper modelMapper;
     
     @Transactional(readOnly = true)
-    @Cacheable(value = "accounts", key = "#id")
+    @Cacheable(value = "accounts", key = "#accountId")
     public AccountResponse getAccountById(Long accountId) { // Admin
         Account account = getOrThrow(accountId);
         return modelMapper.map(account, AccountResponse.class);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "accounts", key = "#accountNumber")
     public AccountResponse getByAccountNumber(String accountNumber) { // Admin
         Account account = getByAccountNumberOrThrow(accountNumber);
         return modelMapper.map(account, AccountResponse.class);
@@ -97,6 +99,7 @@ public class AccountService {
     }
     
     @Transactional
+    @CacheEvict(value = {"accountsById", "accountsByNumber"}, allEntries = true)
     public AccountResponse updateStatus(UpdateAccountRequest updateAccountRequest) { // Admin
         Account account = getByAccountNumberOrThrow(updateAccountRequest.getAccountNumber());
         validateUserSecurity(account.getUser(), getSecuredUser());
