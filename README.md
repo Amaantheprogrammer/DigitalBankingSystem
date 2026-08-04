@@ -247,6 +247,38 @@ PATCH /fraud-logs/{fraudLogId}/status
 ```
 
 ---
+## Dockerized Deployment
+
+The application is fully containerized using Docker and Docker Compose.
+
+### Services
+
+| Service | Purpose |
+|----------|----------|
+| Spring Boot App | Banking API |
+| MySQL | Persistent database |
+| Redis | Token blacklist and caching |
+
+### Run Using Docker
+
+```bash
+docker-compose up --build
+```
+
+### Container Architecture
+
+```
+┌──────────────────────┐
+│   Spring Boot API    │
+└──────────┬───────────┘
+           │
+     ┌─────┴─────┐
+     │           │
+┌────▼────┐ ┌────▼────┐
+│ MySQL   │ │ Redis   │
+└─────────┘ └─────────┘
+```
+---
 
 ## Getting Started
 
@@ -313,6 +345,19 @@ mvn spring-boot:run
 5. JWT filter validates the token.
 6. Spring Security authorizes requests based on user roles.
 7. Logout adds the token to Redis blacklist.
+
+---
+
+## Highlights
+
+- Built using Java 17 and Spring Boot
+- Secured with JWT Authentication and Role-Based Access Control (RBAC)
+- Redis-powered token blacklisting for secure logout functionality
+- Supports fund transfers, deposits, withdrawals, and account management
+- Fraud monitoring and audit logging subsystem
+- Dockerized application stack using Docker Compose
+- MySQL for persistent storage and Redis for caching/session management
+- Centralized exception handling and request validation
 
 ---
 
