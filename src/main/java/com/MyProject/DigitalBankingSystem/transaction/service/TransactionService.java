@@ -5,9 +5,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-import com.MyProject.DigitalBankingSystem.exception.*;
-import com.MyProject.DigitalBankingSystem.fraud.service.FraudCheckService;
-import com.MyProject.DigitalBankingSystem.idempotency.service.IdempotencyService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 import com.MyProject.DigitalBankingSystem.account.entity.Account;
 import com.MyProject.DigitalBankingSystem.account.entity.AccountStatus;
 import com.MyProject.DigitalBankingSystem.account.repository.AccountRepository;
+import com.MyProject.DigitalBankingSystem.exception.AccessDeniedException;
+import com.MyProject.DigitalBankingSystem.exception.DuplicateResourceException;
+import com.MyProject.DigitalBankingSystem.exception.InsufficientBalanceException;
+import com.MyProject.DigitalBankingSystem.exception.InvalidTransactionException;
+import com.MyProject.DigitalBankingSystem.exception.ResourceNotFoundException;
+import com.MyProject.DigitalBankingSystem.fraud.service.FraudCheckService;
+import com.MyProject.DigitalBankingSystem.idempotency.service.IdempotencyService;
 import com.MyProject.DigitalBankingSystem.transaction.dto.DepositRequest;
 import com.MyProject.DigitalBankingSystem.transaction.dto.TransactionRequest;
 import com.MyProject.DigitalBankingSystem.transaction.dto.TransactionResponse;
@@ -44,7 +48,9 @@ public class TransactionService {
     private final ModelMapper modelMapper;
 
     private static final String TRANSFER = "transfer";
+    @SuppressWarnings("unused")
     private static final String WITHDRAW = "withdraw";
+    @SuppressWarnings("unused")
     private static final String DEPOSIT = "deposit";
 
     @Transactional(readOnly = true)

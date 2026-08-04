@@ -1,6 +1,7 @@
 package com.MyProject.DigitalBankingSystem.user.service;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +26,9 @@ public class UserService {
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
 
+
     @Transactional(readOnly = true)
+    @Cacheable(value = "users", key = "#id")
     public UserResponse getUserById(Long userId) {
         User user = getUserOrThrow(userId);
         return modelMapper.map(user, UserResponse.class);
