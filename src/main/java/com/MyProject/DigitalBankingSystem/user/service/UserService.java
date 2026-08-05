@@ -26,15 +26,15 @@ public class UserService {
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
 
-
     @Transactional(readOnly = true)
-    @Cacheable(value = "users", key = "#id")
+    @Cacheable(value = "usersById", key = "#userId")
     public UserResponse getUserById(Long userId) {
         User user = getUserOrThrow(userId);
         return modelMapper.map(user, UserResponse.class);
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "usersByEmail", key = "#email")
     public UserResponse getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));

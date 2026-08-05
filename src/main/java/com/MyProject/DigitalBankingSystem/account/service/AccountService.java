@@ -35,14 +35,14 @@ public class AccountService {
     private final ModelMapper modelMapper;
     
     @Transactional(readOnly = true)
-    @Cacheable(value = "accounts", key = "#accountId")
+    @Cacheable(value = "accountsById", key = "#accountId")
     public AccountResponse getAccountById(Long accountId) { // Admin
         Account account = getOrThrow(accountId);
         return modelMapper.map(account, AccountResponse.class);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "accounts", key = "#accountNumber")
+    @Cacheable(value = "accountsByNumber", key = "#accountNumber")
     public AccountResponse getByAccountNumber(String accountNumber) { // Admin
         Account account = getByAccountNumberOrThrow(accountNumber);
         return modelMapper.map(account, AccountResponse.class);
@@ -61,6 +61,7 @@ public class AccountService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "accountsByUserId", key = "#userId")
     public List<AccountResponse> getAccountsByUserId(Long userId) { // Admin
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User not found with ID: " + userId);
