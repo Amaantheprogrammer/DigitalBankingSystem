@@ -51,4 +51,5 @@ VALUES
 
 (18, '100000000018', 250000.00, 'ACTIVE', 'CHECKING', NOW(), 15);
 
-SELECT role FROM users WHERE id = 1;
+USE banking_db;
+SELECT * FROM transactions;

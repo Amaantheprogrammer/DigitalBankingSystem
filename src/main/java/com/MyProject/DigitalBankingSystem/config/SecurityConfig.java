@@ -32,7 +32,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Authentication
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(
+                                "/auth/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html").permitAll()
                         // User access
                         .requestMatchers(HttpMethod.GET, "/users/my-user").hasAnyRole("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET,"/users/**").hasRole("ADMIN")

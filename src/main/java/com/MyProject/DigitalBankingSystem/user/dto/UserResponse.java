@@ -1,5 +1,6 @@
 package com.MyProject.DigitalBankingSystem.user.dto;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import com.MyProject.DigitalBankingSystem.user.entity.Role;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserResponse {
+public class UserResponse implements Serializable {
     private Long userId;
     private String name;
     private String email;
