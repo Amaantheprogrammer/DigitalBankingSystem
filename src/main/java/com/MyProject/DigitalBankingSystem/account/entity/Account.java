@@ -8,6 +8,7 @@ import com.MyProject.DigitalBankingSystem.transaction.entity.Transaction;
 import com.MyProject.DigitalBankingSystem.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -61,9 +62,11 @@ public class Account {
     @Column(nullable = false)
     private AccountType accountType;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "senderAccount")
     private List<Transaction> sentTransactions;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "receiverAccount")
     private List<Transaction> receivedTransactions;
 

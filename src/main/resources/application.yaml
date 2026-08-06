@@ -22,7 +22,7 @@ spring:
     open-in-view: false
 
 server:
-  port: 5380
+  port: 5381
   servlet:
     context-path: /api/v1
 
