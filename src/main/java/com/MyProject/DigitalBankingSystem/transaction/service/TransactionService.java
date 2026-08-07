@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+import com.MyProject.DigitalBankingSystem.audit.annotation.Auditable;
+import com.MyProject.DigitalBankingSystem.audit.entity.EntityType;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -104,6 +106,7 @@ public class TransactionService {
         return transactions.map(transaction -> modelMapper.map(transaction, TransactionResponse.class));
     }
 
+    @Auditable(action = "TRANSFER", entityType = EntityType.TRANSACTION)
     @Transactional
     public TransactionResponse transfer(String key, TransactionRequest transactionRequest) {
         if (idempotencyService.exists(key, TRANSFER)) {
@@ -155,6 +158,7 @@ public class TransactionService {
         return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
 
+    @Auditable(action = "DEPOSIT", entityType = EntityType.TRANSACTION)
     @Transactional
     public TransactionResponse deposit(DepositRequest depositRequest) {
         Account account = getAccountOrThrow(depositRequest.getAccountNumber());
@@ -178,6 +182,7 @@ public class TransactionService {
         return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
 
+    @Auditable(action = "WITHDRAW", entityType = EntityType.TRANSACTION)
     @Transactional
     public TransactionResponse withdraw(WithdrawRequest withdrawRequest) {
         Account account = getAccountOrThrow(withdrawRequest.getAccountNumber());
