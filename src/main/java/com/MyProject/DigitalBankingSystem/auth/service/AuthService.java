@@ -1,22 +1,24 @@
 package com.MyProject.DigitalBankingSystem.auth.service;
 
+import java.time.LocalDateTime;
+
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.MyProject.DigitalBankingSystem.audit.annotation.Auditable;
 import com.MyProject.DigitalBankingSystem.audit.entity.AuditLog;
 import com.MyProject.DigitalBankingSystem.audit.entity.AuditLogStatus;
 import com.MyProject.DigitalBankingSystem.audit.entity.AuditableAction;
 import com.MyProject.DigitalBankingSystem.audit.entity.EntityType;
 import com.MyProject.DigitalBankingSystem.audit.repository.AuditLogRepository;
-import com.MyProject.DigitalBankingSystem.auth.jwt.TokenBlacklistService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.MyProject.DigitalBankingSystem.auth.dto.AuthResponse;
 import com.MyProject.DigitalBankingSystem.auth.dto.LoginRequest;
 import com.MyProject.DigitalBankingSystem.auth.jwt.JwtService;
+import com.MyProject.DigitalBankingSystem.auth.jwt.TokenBlacklistService;
 import com.MyProject.DigitalBankingSystem.exception.DuplicateResourceException;
 import com.MyProject.DigitalBankingSystem.exception.ResourceNotFoundException;
 import com.MyProject.DigitalBankingSystem.user.dto.UserRequest;
@@ -24,9 +26,8 @@ import com.MyProject.DigitalBankingSystem.user.entity.Role;
 import com.MyProject.DigitalBankingSystem.user.entity.User;
 import com.MyProject.DigitalBankingSystem.user.repository.UserRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,7 @@ public class AuthService {
                             request.getPassword()
                     )
             );
-        } catch (Exception ex) {
+        } catch (AuthenticationException ex) {
             auditLogRepository.save(
                     AuditLog.builder()
                             .userEmail(request.getEmail())
