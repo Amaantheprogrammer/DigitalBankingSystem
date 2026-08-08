@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.MyProject.DigitalBankingSystem.audit.annotation.Auditable;
+import com.MyProject.DigitalBankingSystem.audit.entity.AuditableAction;
+import com.MyProject.DigitalBankingSystem.audit.entity.EntityType;
 import com.MyProject.DigitalBankingSystem.exception.AccessDeniedException;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheEvict;
@@ -89,6 +92,7 @@ public class AccountService {
     }
 
     @Transactional
+    @Auditable(action = AuditableAction.CREATE_ACCOUNT, entityType = EntityType.ACCOUNT)
     public AccountResponse createAccount(AccountRequest accountRequest) { // User + Admin
         User securedUser = getSecuredUser();
         Account account = modelMapper.map(accountRequest, Account.class);
@@ -101,6 +105,7 @@ public class AccountService {
     
     @Transactional
     @CacheEvict(value = {"accountsById", "accountsByNumber"}, allEntries = true)
+    @Auditable(action = AuditableAction.UPDATE_ACCOUNT, entityType = EntityType.ACCOUNT)
     public AccountResponse updateStatus(UpdateAccountRequest updateAccountRequest) { // Admin
         Account account = getByAccountNumberOrThrow(updateAccountRequest.getAccountNumber());
         validateUserSecurity(account.getUser(), getSecuredUser());

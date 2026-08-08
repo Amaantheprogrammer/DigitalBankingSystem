@@ -1,5 +1,8 @@
 package com.MyProject.DigitalBankingSystem.user.service;
 
+import com.MyProject.DigitalBankingSystem.audit.annotation.Auditable;
+import com.MyProject.DigitalBankingSystem.audit.entity.AuditableAction;
+import com.MyProject.DigitalBankingSystem.audit.entity.EntityType;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
@@ -48,6 +51,7 @@ public class UserService {
     }
 
     @Transactional
+    @Auditable(action = AuditableAction.UPDATE_USER, entityType = EntityType.USER)
     public UserResponse updateUser(Long userId, UpdateUserRequest request) {
         User user = getUserOrThrow(userId);
         if (!user.getEmail().equals(getSecuredUser().getEmail())) {

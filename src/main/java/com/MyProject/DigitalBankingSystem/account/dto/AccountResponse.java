@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import com.MyProject.DigitalBankingSystem.account.entity.AccountStatus;
 import com.MyProject.DigitalBankingSystem.account.entity.AccountType;
 
+import com.MyProject.DigitalBankingSystem.audit.entity.AuditableEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountResponse implements Serializable {
+public class AccountResponse implements Serializable, AuditableEntity {
     private Long id;
     private String accountNumber;
     private BigDecimal balance;

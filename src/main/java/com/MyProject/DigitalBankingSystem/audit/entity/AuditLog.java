@@ -19,7 +19,8 @@ public class AuditLog {
 
     private String userEmail;
 
-    private String action;
+    @Enumerated(EnumType.STRING)
+    private AuditableAction action;
 
     @Enumerated(EnumType.STRING)
     private EntityType entityType;

@@ -2,6 +2,7 @@ package com.MyProject.DigitalBankingSystem.audit.aspect;
 
 import java.time.LocalDateTime;
 
+import com.MyProject.DigitalBankingSystem.audit.entity.AuditableEntity;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
@@ -24,11 +25,16 @@ public class AuditAspect {
     private final AuditLogRepository auditLogRepository;
 
     @AfterReturning(pointcut = "@annotation(auditable)", returning = "result")
-    public void logSuccess(Auditable auditable, Object result) {     
+    public void logSuccess(Auditable auditable, Object result) {
+        Long entityId = null;
+        if (result instanceof AuditableEntity entity) {
+            entityId = entity.getId();
+        }
         AuditLog log = AuditLog.builder()
                 .userEmail(getCurrentUserEmail())
                 .action(auditable.action())
                 .entityType(auditable.entityType())
+                .entityId(entityId)
                 .timestamp(LocalDateTime.now())
                 .status(AuditLogStatus.SUCCESS)
                 .build();
@@ -47,7 +53,7 @@ public class AuditAspect {
     }
 
     private String getCurrentUserEmail() {
-        Authentication authentication = SecurityContextHolder.createEmptyContext().getAuthentication();
-        return authentication.getName();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null ? authentication.getName() : "NULL";
     }
 }

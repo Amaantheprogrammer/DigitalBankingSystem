@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import com.MyProject.DigitalBankingSystem.audit.annotation.Auditable;
+import com.MyProject.DigitalBankingSystem.audit.entity.AuditableAction;
 import com.MyProject.DigitalBankingSystem.audit.entity.EntityType;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.Cacheable;
@@ -106,8 +107,8 @@ public class TransactionService {
         return transactions.map(transaction -> modelMapper.map(transaction, TransactionResponse.class));
     }
 
-    @Auditable(action = "TRANSFER", entityType = EntityType.TRANSACTION)
     @Transactional
+    @Auditable(action = AuditableAction.TRANSFER, entityType = EntityType.TRANSACTION)
     public TransactionResponse transfer(String key, TransactionRequest transactionRequest) {
         if (idempotencyService.exists(key, TRANSFER)) {
             throw new DuplicateResourceException("Transaction already processed");
@@ -158,8 +159,8 @@ public class TransactionService {
         return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
 
-    @Auditable(action = "DEPOSIT", entityType = EntityType.TRANSACTION)
     @Transactional
+    @Auditable(action = AuditableAction.DEPOSIT, entityType = EntityType.TRANSACTION)
     public TransactionResponse deposit(DepositRequest depositRequest) {
         Account account = getAccountOrThrow(depositRequest.getAccountNumber());
 
@@ -182,8 +183,8 @@ public class TransactionService {
         return modelMapper.map(savedTransaction, TransactionResponse.class);
     }
 
-    @Auditable(action = "WITHDRAW", entityType = EntityType.TRANSACTION)
     @Transactional
+    @Auditable(action = AuditableAction.WITHDRAW, entityType = EntityType.TRANSACTION)
     public TransactionResponse withdraw(WithdrawRequest withdrawRequest) {
         Account account = getAccountOrThrow(withdrawRequest.getAccountNumber());
 
